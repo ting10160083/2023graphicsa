@@ -5,12 +5,18 @@ GLMmodel * head = NULL;
 GLMmodel * body = NULL;
 GLMmodel * uparmR = NULL;
 GLMmodel * lowarmR = NULL;
-int show[4] = {0, 1, 0, 0};
+int show[4] = {1, 1, 1, 1};
+int ID=2; ///0:頭 1:身體 2:上手臂 3:下手臂
 void keyboard(unsigned char key, int x, int y){
-    if(key=='0')show[0] = !show[0];
-    if(key=='1')show[1] = !show[1];
-    if(key=='2')show[2] = !show[2];
-    if(key=='3')show[3] = !show[3];
+    if(key=='0') ID = 0;
+    if(key=='1') ID = 1;
+    if(key=='2') ID = 2;
+    if(key=='3') ID = 3;
+    ///if(key=='0')show[0] = !show[0];
+    ///if(key=='1')show[1] = !show[1];
+    ///if(key=='2')show[2] = !show[2];
+    ///if(key=='3')show[3] = !show[3];
+
     glutPostRedisplay();
 }
 FILE * fout = NULL;
@@ -29,14 +35,40 @@ void display()
             lowarmR = glmReadOBJ("model/lowarmR.obj");
             ///glmUnitize(body);
         }
+        if(ID==0) glColor3f(1, 0, 0); ///選定設紅色
+        else glColor3f(1, 1, 1);
         if(show[0]) glmDraw(head, GLM_MATERIAL);
+
+        if(ID==1) glColor3f(1, 0, 0); ///選定設紅色
+        else glColor3f(1, 1, 1); ///沒選定設白色
         if(show[1]) glmDraw(body, GLM_MATERIAL);
+
         glPushMatrix();
-            glTranslatef(teapotX, teapotY, 0);
+            glTranslatef(-1.106666, +0.480000, 0); ///要正負相反
+            glRotatef(angle, 0, 0, 1); ///TRT建出來
+            glTranslatef(1.106666, -0.480000, 0); ///原來的點
+
+            if(ID==2) glColor3f(1, 0, 0); ///選定設紅色
+            else glColor3f(1, 1, 1); ///沒選定設白色
             if(show[2]) glmDraw(uparmR, GLM_MATERIAL);
+
+            glPushMatrix();
+                glTranslatef(-2.019998, +0.200000, 0); ///要正負相反
+                glRotatef(angle, 0, 0, 1); ///TRT建出來
+                glTranslatef(2.019998, -0.200000, 0); ///原來的點
+
+                if(ID==3) glColor3f(1, 0, 0); ///選定設紅色
+                else glColor3f(1, 1, 1); ///沒選定設白色
+                if(show[3]) glmDraw(lowarmR, GLM_MATERIAL);
+            glPopMatrix();
+
         glPopMatrix();
-        if(show[3]) glmDraw(lowarmR, GLM_MATERIAL);
+
+
+
     glPopMatrix();
+    glColor3f(0, 1, 0); ///放一個小茶壺在正中間當參考點
+    glutSolidTeapot(0.02);
     glutSwapBuffers();
 }
 int oldX=0,oldY=0;
@@ -44,7 +76,7 @@ void motion(int x, int y){
     teapotX += (x - oldX)/150.0;
     teapotY -= (y - oldY)/150.0;
     oldX = x;
-    oldY = y;
+    angle = x;
     printf("glTranslatef(%f, %f, 0);\n", teapotX, teapotY);
     glutPostRedisplay();
 }
@@ -53,7 +85,7 @@ void mouse(int button, int state, int x, int y)
     if(state==GLUT_DOWN){
         oldX = x;///teapotX = (x-150)/150.0;
         oldY = y;///teapotY = (150-y)/150.0;
-        angle=x;
+        angle = x;
         ///printf("glTranslatef(%f, %f, 0);\n", teapotX, teapotY);
         ///if(fout=NULL) fout = fopen("file4.txt", "w");///沒開檔案 就開檔案
         ///fprintf(fout, "%f %f\n", teapotX, teapotY);///要再存座標
