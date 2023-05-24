@@ -6,12 +6,30 @@ GLMmodel * body = NULL;
 GLMmodel * uparmR = NULL;
 GLMmodel * lowarmR = NULL;
 int show[4] = {1, 1, 1, 1};
-int ID=2; ///0:頭 1:身體 2:上手臂 3:下手臂
+int ID=3; ///0:頭 1:身體 2:上手臂 3:下手臂
+FILE * fout = NULL;
+FILE * fin = NULL;
+float teapotX=0,teapotY=0;
+///float angle=0, angle2=0, angle3=0;
+float angle[20] = {}; ///變陣列
 void keyboard(unsigned char key, int x, int y){
     if(key=='0') ID = 0;
     if(key=='1') ID = 1;
     if(key=='2') ID = 2;
     if(key=='3') ID = 3;
+    if(key=='s'){
+        if(fout==NULL) fout = fopen("motion.txt", "w"); ///寫檔案
+        for(int i=0;i<20;i++){ ///寫檔案
+            fprintf(fout, "%0.2f ", angle[i]); ///寫檔案 後面有跳行
+        }
+        fprintf(fout, "\n"); ///寫檔案 後面有跳行
+    }else if(key=='r'){
+        if(fin==NULL) fin = fopen("motion.txt", "r"); ///讀檔案
+        for(int i=0;i<20;i++){
+            fscanf(fin, "%f", &angle[i]);
+        }
+        glutPostRedisplay();
+    }
     ///if(key=='0')show[0] = !show[0];
     ///if(key=='1')show[1] = !show[1];
     ///if(key=='2')show[2] = !show[2];
@@ -19,10 +37,8 @@ void keyboard(unsigned char key, int x, int y){
 
     glutPostRedisplay();
 }
-FILE * fout = NULL;
-FILE * fin = NULL;
-float teapotX=0,teapotY=0;
-float angle=0, angle2=0, angle3=0;
+
+
 void display()
 {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -45,16 +61,15 @@ void display()
 
         glPushMatrix();
             glTranslatef(-1.106666, +0.480000, 0); ///要正負相反
-            glRotatef(angle, 0, 0, 1); ///TRT建出來
+            glRotatef(angle[2], 0, 0, 1); ///改用陣列
             glTranslatef(1.106666, -0.480000, 0); ///原來的點
 
             if(ID==2) glColor3f(1, 0, 0); ///選定設紅色
             else glColor3f(1, 1, 1); ///沒選定設白色
             if(show[2]) glmDraw(uparmR, GLM_MATERIAL);
-
             glPushMatrix();
                 glTranslatef(-2.019998, +0.200000, 0); ///要正負相反
-                glRotatef(angle, 0, 0, 1); ///TRT建出來
+                glRotatef(angle[3], 0, 0, 1); ///改用陣列
                 glTranslatef(2.019998, -0.200000, 0); ///原來的點
 
                 if(ID==3) glColor3f(1, 0, 0); ///選定設紅色
@@ -75,8 +90,9 @@ int oldX=0,oldY=0;
 void motion(int x, int y){
     teapotX += (x - oldX)/150.0;
     teapotY -= (y - oldY)/150.0;
+    angle[ID] += (x-oldX); ///改用陣列
     oldX = x;
-    angle = x;
+    oldY = y;
     printf("glTranslatef(%f, %f, 0);\n", teapotX, teapotY);
     glutPostRedisplay();
 }
@@ -85,7 +101,7 @@ void mouse(int button, int state, int x, int y)
     if(state==GLUT_DOWN){
         oldX = x;///teapotX = (x-150)/150.0;
         oldY = y;///teapotY = (150-y)/150.0;
-        angle = x;
+
         ///printf("glTranslatef(%f, %f, 0);\n", teapotX, teapotY);
         ///if(fout=NULL) fout = fopen("file4.txt", "w");///沒開檔案 就開檔案
         ///fprintf(fout, "%f %f\n", teapotX, teapotY);///要再存座標
